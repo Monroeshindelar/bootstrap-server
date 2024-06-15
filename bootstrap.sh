@@ -2,6 +2,7 @@
 
 IFS=" "
 BOOTSTRAP_KUBE_NODE=false
+BOOTSTRAP_REBOOT=false
 BOOTSTRAP_SKIP_HOSTS=false
 SSH_CONFIG_PATH="ssh"
 ZSH_CONFIG_PATH="zsh"
@@ -12,14 +13,22 @@ print_usage() {
 
 while getopts 'ghks' flag; do
     case "${flag}" in
-        g) BOOTSTRAP_GH_USER=${OPTARG} ;;
-        h) BOOTSTRAP_HOSTNAME=${OPTARG} ;;
-        k) echo "Is kube node. Will install kubernetes packages"
-           BOOTSTRAP_KUBE_NODE=true ;;
-        s) echo "Skipping hosts configuration"
-           BOOTSTRAP_SKIP_HOSTS=true ;;
-        *) print_usage
-           exit 1 ;;
+        g) 
+            BOOTSTRAP_GH_USER=${OPTARG} ;;
+        h) 
+            BOOTSTRAP_HOSTNAME=${OPTARG} ;;
+        k) 
+            echo "Is kube node. Will install kubernetes packages"
+            BOOTSTRAP_KUBE_NODE=true ;;
+        r)
+            echo "Rebooting when complete"
+            BOOTSTRAP_REBOOT=true
+        s) 
+            echo "Skipping hosts configuration"
+            BOOTSTRAP_SKIP_HOSTS=true ;;
+        *) 
+            print_usage
+            exit 1 ;;
     esac
 done
 
@@ -76,13 +85,13 @@ echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.
 apt-get update
 
 # Install and configure zsh and plugins
-echo "Installing and configuring zsh..."
+echo "Installing and configuring zsh..." 
 apt-get install zsh -y
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autocomplete
 cp $ZSH_CONFIG_PATH/zshrc ~/.zshrc
-cp $ZSH_CONFIG_PATH/themes/* $ZSH/themes/
+cp $ZSH_CONFIG_PATH/themes/* $ZSH/themes
 
 # Install docker
 echo "Installing docker..."
@@ -108,6 +117,9 @@ apt-get update && apt-get upgrade -y
 sudo chsh -s "$(which zsh)" $USER
 source ~/.zshrc
 
-echo "Finished installing, rebooting in 5 seconds"
-sleep 5
-reboot
+echo "Finished installing"
+if [ "${BOOTSTRAP_REBOOT}" ]; then
+    echo "Rebooting in 5 seconds..."
+    sleep 5
+    reboot
+fi
