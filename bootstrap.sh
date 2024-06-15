@@ -78,7 +78,7 @@ echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.
 echo "Installing and configuring zsh..." 
 sudo apt-get install zsh -y
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-git clone https://github.com/zsh-users/zsh-autosuggestions -~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
 git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git  ~/.oh-my-zsh/custom/plugins/zsh-autocomplete
 cp $ZSH_CONFIG_PATH/zshrc ~/.zshrc
 cp $ZSH_CONFIG_PATH/themes/* ~/.oh-my-zsh/themes
@@ -105,11 +105,10 @@ sudo apt-get update && sudo apt-get upgrade -y
 
 # Set the default shell to zsh
 sudo chsh -s "$(which zsh)" $USER
-source ~/.zshrc
 
 echo "Finished installing"
 if  ${BOOTSTRAP_REBOOT} ; then
     echo "Rebooting in 5 seconds..."
     sleep 5
-    reboot
+    sudo reboot
 fi
