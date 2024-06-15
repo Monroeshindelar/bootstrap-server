@@ -8,7 +8,7 @@ while read -ra line; do
     name=${line[0]}
     ip=${line[1]}
 
-    if [ "${hostname}" != "$name" ]; then
+    if [ "$(hostname)" != "$name" ]; then
         echo "Configuring host for ${name}"
         echo "${ip}  ${name}.local  ${name}" >> /etc/hosts
     fi

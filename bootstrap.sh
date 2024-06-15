@@ -61,7 +61,7 @@ sudo apt-get install -y ca-certificates curl apt-transport-https ca-certificates
 
 # Setup repository for docker
 sudo apt-get install ca-certificates curl
-sudo install -m 0755 -d /etc/apt/keyrings
+sudo install -c -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
 echo \
@@ -71,17 +71,17 @@ echo \
 
 # Setup repository for kube
 echo "Setting up kube repository"
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 
 # Install and configure zsh and plugins
 echo "Installing and configuring zsh..." 
 sudo apt-get install zsh -y
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autocomplete
+git clone https://github.com/zsh-users/zsh-autosuggestions -~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git  ~/.oh-my-zsh/custom/plugins/zsh-autocomplete
 cp $ZSH_CONFIG_PATH/zshrc ~/.zshrc
-cp $ZSH_CONFIG_PATH/themes/* $ZSH/themes
+cp $ZSH_CONFIG_PATH/themes/* ~/.oh-my-zsh/themes
 
 # Install docker
 echo "Installing docker..."
@@ -108,7 +108,7 @@ sudo chsh -s "$(which zsh)" $USER
 source ~/.zshrc
 
 echo "Finished installing"
-if [ "${BOOTSTRAP_REBOOT}" ]; then
+if  ${BOOTSTRAP_REBOOT} ; then
     echo "Rebooting in 5 seconds..."
     sleep 5
     reboot
