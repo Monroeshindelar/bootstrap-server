@@ -1,6 +1,8 @@
 #!/bin/bash
 
-IFS=" " 
+IFS=" "
+BOOTSTRAP_KUBE_NODE=false
+BOOTSTRAP_SKIP_HOSTS=false
 SSH_CONFIG_PATH="ssh"
 ZSH_CONFIG_PATH="zsh"
 
@@ -8,10 +10,14 @@ print_usage() {
     printf "Usage: ..."
 }
 
-while getopts 'gh' flag; do
+while getopts 'ghks' flag; do
     case "${flag}" in
         g) BOOTSTRAP_GH_USER=${OPTARG} ;;
         h) BOOTSTRAP_HOSTNAME=${OPTARG} ;;
+        k) echo "Is kube node. Will install kubernetes packages"
+           BOOTSTRAP_KUBE_NODE=true ;;
+        s) echo "Skipping hosts configuration"
+           BOOTSTRAP_SKIP_HOSTS=true ;;
         *) print_usage
            exit 1 ;;
     esac
@@ -23,20 +29,21 @@ if [[ ! -z "${BOOTSTRAP_HOSTNAME}" ]]; then
 fi
 
 # Adding entries to the host file
-echo "Configuring hosts file"
-echo "# Added by bootstrap script" >> /etc/hosts
-echo "127.0.1.1  $(hostname).local   $(hostname)" >> /etc/hosts
+if [ ! "${BOOTSTRAP_SKIP_HOSTS}" ]; then
+    echo "Configuring hosts file"
+    echo "# Added by bootstrap script" >> /etc/hosts
+    echo "127.0.1.1  $(hostname).local   $(hostname)" >> /etc/hosts
 
-while read -ra line; do
-    name=${line[0]}
-    ip=${line[1]}
+    while read -ra line; do
+        name=${line[0]}
+        ip=${line[1]}
 
-    if [ "${hostname}" != "$name" ]; then
-	echo "Configuring host for ${name}"
-        echo "${ip}  ${name}.local  ${name}" >> /etc/hosts
-    fi
-done < hosts/hosts
-
+        if [ "${hostname}" != "$name" ]; then
+        echo "Configuring host for ${name}"
+            echo "${ip}  ${name}.local  ${name}" >> /etc/hosts
+        fi
+    done < hosts/hosts
+fi
 
 # Set up SSH server with auth keys from github
 echo "Configuring ssh"
@@ -71,7 +78,7 @@ apt-get update
 # Install and configure zsh and plugins
 echo "Installing and configuring zsh..."
 apt-get install zsh -y
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" --unattended
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autocomplete
 cp $ZSH_CONFIG_PATH/zshrc ~/.zshrc
@@ -87,14 +94,20 @@ mkdir -p /etc/containerd/
 containerd config default | tee /etc/containerd/config.toml
 sed -i 's/SystemdCgroup \= false/SystemdCgroup \= true/g' /etc/containerd/config.toml
 
-# Install kubernetes
-echo "Installing kubernetes"
-apt-get update
-apt-get install -y kubelet kubeadm kubectl kubectx
-apt-mark hold kubelet kubeadm kubectl
-systemctl enable --now kubelet
+# Install kubernetes  
+if [ "$BOOTSTRAP_KUBE_NODE" ]; then
+    echo "Installing kubernetes"  
+    apt-get install -y kubelet kubeadm kubectl kubectx
+    apt-mark hold kubelet kubeadm kubectl
+    systemctl enable --now kubelet
+fi
 
 apt-get update && apt-get upgrade -y
+
+# Set the default shell to zsh
+sudo chsh -s "$(which zsh)" $USER
 source ~/.zshrc
 
+echo "Finished installing, rebooting in 5 seconds"
+sleep 5
 reboot
