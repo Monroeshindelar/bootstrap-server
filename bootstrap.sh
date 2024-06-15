@@ -43,7 +43,7 @@ if [[ ! -z "${BOOTSTRAP_HOSTNAME}" ]]; then
 fi
 
 # Adding entries to the host file
-if [ ! "${BOOTSTRAP_SKIP_HOSTS}" ]; then
+if [ ! ${BOOTSTRAP_SKIP_HOSTS} ]; then
     sudo $HELPERS_PATH/hostsHelper.sh
 fi
 
