@@ -1,11 +1,19 @@
 #!/bin/bash
 
+IFS=" " 
 SSH_CONFIG_PATHo="ssh"
 ZSH_CONFIG_PATH="zsh"
 
-while getopts 'h' flag; do
+print_usage() {
+    printf "Usage: ..."
+}
+
+while getopts 'gh' flag; do
     case "${flag}" in
-        h) BOOTSTRAP_HOSTNAME=${OPTARG}
+        g) BOOTSTRAP_GH_USER=${OPTARG} ;;
+        h) BOOTSTRAP_HOSTNAME=${OPTARG} ;;
+        *) print_usage
+           exit 1 ;;
     esac
 done
 
@@ -14,9 +22,26 @@ if [ -z "${BOOTSTRAP_HOSTNAME}" ];
     hostnamectl set-hostname ${BOOTSTRAP_HOSTNAME}
 fi
 
+# Adding entries to the host file
+cat "# Added by bootstrap script" >> /etc/hosts
+cat "127.0.1.1  ${hostname}.local   ${hostname}" >> /etc/hosts
+
+while read -ra line; do
+    name=${lines[0]}
+    ip=${lines[1]}
+
+    if [ "${hostname}" != "$name" ] then;
+        cat "${ip}  ${name}.local  ${name}" >> /etc/hosts
+    fi
+done < hosts/hosts
+
+
 # Set up SSH server with auth keys from github
-echo "Setting up ssh server"
-ssh-import-id-gh monroeshindelar
+echo "Configuring ssh"
+if [-z "${BOOTSTRAP_GH_USER}" ];
+    echo "Pulling auth keys from github user ${BOOTSTRAP_GH_USER}"
+    ssh-import-id-gh $BOOTSTRAP_GH_USER
+fi
 cp $SSH_CONFIG_PATH/sshd_config /etc/sshd_config
 systemctl enable sshd && systemctl restart sshd
 
