@@ -22,7 +22,7 @@ while getopts 'ghks' flag; do
             BOOTSTRAP_KUBE_NODE=true ;;
         r)
             echo "Rebooting when complete"
-            BOOTSTRAP_REBOOT=true
+            BOOTSTRAP_REBOOT=true ;;
         s) 
             echo "Skipping hosts configuration"
             BOOTSTRAP_SKIP_HOSTS=true ;;
