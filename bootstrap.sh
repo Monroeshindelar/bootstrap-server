@@ -47,7 +47,7 @@ fi
 
 # Adding entries to the host file
 if ! ${BOOTSTRAP_SKIP_HOSTS} ; then
-    sudo $HELPERS_PATH/hostsHelper.sh
+    sudo $HOSTS_CONFIG_PATH/configureHosts.sh
 fi
 
 # Set up SSH server with auth keys from github
