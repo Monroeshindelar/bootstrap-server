@@ -5,6 +5,7 @@ BOOTSTRAP_KUBE_NODE=false
 BOOTSTRAP_REBOOT=false
 BOOTSTRAP_SKIP_HOSTS=false
 BOOTSTRAP_SKIP_ZSH=false
+BOOTSTRAP_VERBOSE=false
 
 IFS=" "
 KEEP_ZSHRC="yes"
@@ -20,6 +21,7 @@ print_usage() {
     printf "    -k, --kubernetes                Install and configure for use as as kubernetes node\n"
     printf "    -n, --name name                 Configure hostname\n"
     printf "    -r, --reboot                    Reboot when finished\n"
+    printf "    -v, --verbose                   Print extra logs\n"
     printf "    --skip-hosts-configuration      Dont configure hosts file with custom hosts\n"
     printf "    --skip-zsh                      Skips ZSH installation\n"
     exit 1  
@@ -60,8 +62,11 @@ while test $# -gt 0; do
             fi
             shift
             ;;
-        r|--reboot)
+        -r|--reboot)
             BOOTSTRAP_REBOOT=true 
+            ;;
+        -v|--verbose)
+            BOOTSTRAP_VERBOSE=true
             ;;
         --skip-hosts-configuration)
             BOOTSTRAP_SKIP_HOSTS=true
@@ -76,6 +81,34 @@ while test $# -gt 0; do
 done
 
 print_header
+
+if $BOOTSTRAP_VERBOSE; then
+    if [[ ! -z "${BOOTSTRAP_GH_USER}" ]]; then
+        echo "Will configure ssh with keys from ${BOOT_STRAP_GH_USER}"
+    fi
+
+    if [[ ! -z "${BOOTSTRAP_HOSTNAME}" ]]; then
+        echo "Set to configure name to ${BOOTSTRAP_HOSTNAME}"
+    fi
+
+    if ${BOOTSTRAP_SKIP_HOSTS} ; then
+        echo "Will not configure hosts"
+    fi
+
+    if ${BOOTSTRAP_SKIP_ZSH} ; then
+        echo "Will not install ZSH"
+    fi
+
+    if ${BOOTSTRAP_KUBE_NODE} ; then
+        echo "Marked kubernetes packages for installation"
+    fi
+
+    if ${BOOTSTRAP_REBOOT} ; then
+        echo "Will reboot when finished"
+    fi
+fi
+
+
 sudo apt-get update
 sudo systemctl daemon-reload
 
