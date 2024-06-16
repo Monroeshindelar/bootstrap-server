@@ -3,9 +3,9 @@
 BOOTSTRAP_KUBE_NODE=false
 BOOTSTRAP_REBOOT=false
 BOOTSTRAP_SKIP_HOSTS=false
-HELPERS_PATH="helpers"
 IFS=" "
 KEEP_ZSHRC="yes"
+HOSTS_CONFIG_PATH="hosts"
 SSH_CONFIG_PATH="ssh"
 ZSH_CONFIG_PATH="zsh"
 
@@ -16,7 +16,7 @@ print_usage() {
 
 sudo apt-get update
 
-chmod +x $HELPERS_PATH/hostsHelper.sh
+chmod +x $HELPERS_PATH/configureHosts.sh
 
 while getopts 'ghks' flag; do
     case "${flag}" in

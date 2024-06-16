@@ -1,5 +1,8 @@
 #!/bin/bash
 
+mv /etc/hosts /etc/hosts.old
+cp hosts-default /etc/hosts
+
 echo "Configuring hosts file"
 echo "# Added by bootstrap script" >> /etc/hosts
 echo "127.0.1.1  $(hostname).local   $(hostname)" >> /etc/hosts
