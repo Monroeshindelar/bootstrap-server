@@ -37,11 +37,6 @@ print_header() {
     printf "==================================================="
 }
 
-sudo apt-get update
-sudo systemctl daemon-reload
-
-chmod +x $HOSTS_CONFIG_PATH/configureHosts.sh
-
 while test $# -gt 0; do
     case "$1" in
         -h|--help)
@@ -51,12 +46,10 @@ while test $# -gt 0; do
             shift
             if test $# -gt 0; then
                 BOOTSTRAP_GH_USER=${1}
-                echo "Using github user ${BOOTSTRAP_GH_USER} to configure ssh"
             fi
             shift
             ;;
         -k|--kubernetes)
-            echo "Is kube node. Will install kubernetes packages"
             BOOTSTRAP_KUBE_NODE=true
             ;;
         -n|--name)
@@ -67,15 +60,12 @@ while test $# -gt 0; do
             shift
             ;;
         r|--reboot)
-            echo "Rebooting when complete"
             BOOTSTRAP_REBOOT=true 
             ;;
         --skip-hosts-configuration)
-            echo "Skipping hosts configuration"
             BOOTSTRAP_SKIP_HOSTS=true
             ;;
         --skip-zsh)
-            echo "Skipping ZSH installation"
             BOOTSTRAP_SKIP_ZSH=true
             ;;
         *)
@@ -83,6 +73,12 @@ while test $# -gt 0; do
             ;;
     esac
 done
+
+print_header
+sudo apt-get update
+sudo systemctl daemon-reload
+
+chmod +x $HOSTS_CONFIG_PATH/configureHosts.sh
 
 if [[ ! -z "${BOOTSTRAP_HOSTNAME}" ]]; then
     echo "Setting hostname to ${BOOTSTRAP_HOSTNAME}"
