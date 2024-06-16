@@ -48,7 +48,7 @@ while test $# -gt 0; do
         -g|--github-user)
             shift
             if test $# -gt 0; then
-                BOOTSTRAP_GH_USER=${1}
+                BOOTSTRAP_GH_USER=$1
             fi
             shift
             ;;
@@ -58,7 +58,7 @@ while test $# -gt 0; do
         -n|--name)
             shift
             if test $# -gt 0; then
-                BOOTSTRAP_HOSTNAME=${1}
+                BOOTSTRAP_HOSTNAME=$1
             fi
             shift
             ;;
