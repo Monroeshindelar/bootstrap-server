@@ -1,5 +1,7 @@
 #!/bin/bash
 
+path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
 mv /etc/hosts /etc/hosts.old
 cp hosts-default /etc/hosts
 
@@ -15,4 +17,4 @@ while read -ra line; do
         echo "Configuring host for ${name}"
         echo "${ip}  ${name}.local  ${name}" >> /etc/hosts
     fi
-done < hosts/hosts
+done < $path/hosts
