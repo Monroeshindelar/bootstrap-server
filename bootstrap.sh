@@ -20,9 +20,10 @@ chmod +x $HELPERS_PATH/hostsHelper.sh
 
 while getopts 'ghks' flag; do
     case "${flag}" in
-        g) 
+        g)
+            echo "Using github user ${OPTARG} to configure ssh"
             BOOTSTRAP_GH_USER=${OPTARG} ;;
-        h) 
+        h)
             BOOTSTRAP_HOSTNAME=${OPTARG} ;;
         k) 
             echo "Is kube node. Will install kubernetes packages"
