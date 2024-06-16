@@ -15,26 +15,26 @@ ZSH_CONFIG_PATH="zsh"
 
 print_usage() {
     printf "Usage: $(basename) [options...]"
-    printf "    -g, --github-user <username>    Github user to use for ssh configuration"
-    printf "    -h, --help                      Display this dialogue"
-    printf "    -k, --kubernetes                Install and configure for use as as kubernetes node"
-    printf "    -n, --name name                 Configure hostname"
-    printf "    -r, --reboot                    Reboot when finished"
-    printf "    --skip-hosts-configuration      Dont configure hosts file with custom hosts"
+    printf "    -g, --github-user <username>    Github user to use for ssh configuration\n"
+    printf "    -h, --help                      Display this dialogue\n"
+    printf "    -k, --kubernetes                Install and configure for use as as kubernetes node\n"
+    printf "    -n, --name name                 Configure hostname\n"
+    printf "    -r, --reboot                    Reboot when finished\n"
+    printf "    --skip-hosts-configuration      Dont configure hosts file with custom hosts\n"
     exit 1  
 }
 
 print_header() {
-    printf "==================================================="    
-    printf "==================================================="
-    printf "== ____==============_====== _====================="
-    printf "==| __ )==___===___=| |_=___| |_=_=__=__=_=_=__===="
-    printf "==|  _ \ / _ \ / _ \| __/ __| __| '__/ _\` | '_\ =="
-    printf "==| |_) | (_) | (_) | |_\__ \ |_| | | (_| | |_) |=="
-    printf "==|____/ \___/ \___/ \__|___/\__|_|  \__,_| .__/ =="
-    printf "==========================================|_|======"
-    printf "==================================================="    
-    printf "==================================================="
+    printf "=====================================================\n"    
+    printf "=====================================================\n"
+    printf "=== ____==============_====== _======================\n"
+    printf "===| __ )==___===___=| |_=___| |_=_=__=__=_=_=__=====\n"
+    printf "===|  _ \ / _ \ / _ \| __/ __| __| '__/ _\` | '_\ ===\n"
+    printf "===| |_) | (_) | (_) | |_\__ \ |_| | | (_| | |_) |===\n"
+    printf "===|____/ \___/ \___/ \__|___/\__|_|  \__,_| .__/ ===\n"
+    printf "===========================================|_|=======\n"
+    printf "=====================================================\n"    
+    printf "=====================================================\n"
 }
 
 while test $# -gt 0; do
