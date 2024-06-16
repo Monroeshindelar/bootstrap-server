@@ -16,7 +16,7 @@ print_usage() {
 
 sudo apt-get update
 
-chmod +x $HELPERS_PATH/configureHosts.sh
+chmod +x $HOSTS_CONFIG_PATH/configureHosts.sh
 
 while getopts 'ghks' flag; do
     case "${flag}" in
