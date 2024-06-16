@@ -63,16 +63,20 @@ while test $# -gt 0; do
             shift
             ;;
         -r|--reboot)
-            BOOTSTRAP_REBOOT=true 
+            BOOTSTRAP_REBOOT=true
+            shift
             ;;
         -v|--verbose)
             BOOTSTRAP_VERBOSE=true
+            shift
             ;;
         --skip-hosts-configuration)
             BOOTSTRAP_SKIP_HOSTS=true
+            shift
             ;;
         --skip-zsh)
             BOOTSTRAP_SKIP_ZSH=true
+            shift
             ;;
         *)
             print_usage
