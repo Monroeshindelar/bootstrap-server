@@ -88,7 +88,7 @@ print_header
 
 if $BOOTSTRAP_VERBOSE; then
     if [[ ! -z "${BOOTSTRAP_GH_USER}" ]]; then
-        echo "Will configure ssh with keys from ${BOOT_STRAP_GH_USER}"
+        echo "Will configure ssh with keys from ${BOOTSTRAP_GH_USER}"
     fi
 
     if [[ ! -z "${BOOTSTRAP_HOSTNAME}" ]]; then
