@@ -14,13 +14,14 @@ ZSH_CONFIG_PATH="zsh"
 
 
 print_usage() {
-    printf "Usage: $(basename) [options...]"
+    printf "Usage: $(basename $0) [options...]\n"
     printf "    -g, --github-user <username>    Github user to use for ssh configuration\n"
     printf "    -h, --help                      Display this dialogue\n"
     printf "    -k, --kubernetes                Install and configure for use as as kubernetes node\n"
     printf "    -n, --name name                 Configure hostname\n"
     printf "    -r, --reboot                    Reboot when finished\n"
     printf "    --skip-hosts-configuration      Dont configure hosts file with custom hosts\n"
+    printf "    --skip-zsh                      Skips ZSH installation\n"
     exit 1  
 }
 
