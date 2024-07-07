@@ -54,6 +54,7 @@ while test $# -gt 0; do
             ;;
         --kubernetes)
             BOOTSTRAP_KUBE_NODE=true
+            shift
             ;;
         --name)
             shift
