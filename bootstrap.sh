@@ -19,7 +19,7 @@ print_usage() {
     printf "    -g, --github-user <username>    Github user to use for ssh configuration\n"
     printf "    -h, --help                      Display this dialogue\n"
     printf "    -k, --kubernetes                Install and configure for use as as kubernetes node\n"
-    printf "    -n, --name name                 Configure hostname\n"
+    printf "    -n, --name <name>               Configure hostname\n"
     printf "    -r, --reboot                    Reboot when finished\n"
     printf "    -v, --verbose                   Print extra logs\n"
     printf "    --skip-hosts-configuration      Dont configure hosts file with custom hosts\n"
@@ -45,28 +45,28 @@ while test $# -gt 0; do
         -h|--help)
             print_usage
             ;;
-        -g|--github-user)
+        --github-user)
             shift
             if test $# -gt 0; then
                 BOOTSTRAP_GH_USER=$1
             fi
             shift
             ;;
-        -k|--kubernetes)
+        --kubernetes)
             BOOTSTRAP_KUBE_NODE=true
             ;;
-        -n|--name)
+        --name)
             shift
             if test $# -gt 0; then
                 BOOTSTRAP_HOSTNAME=$1
             fi
             shift
             ;;
-        -r|--reboot)
+        --reboot)
             BOOTSTRAP_REBOOT=true
             shift
             ;;
-        -v|--verbose)
+        -v--verbose)
             BOOTSTRAP_VERBOSE=true
             shift
             ;;
@@ -95,19 +95,19 @@ if $BOOTSTRAP_VERBOSE; then
         echo "Set to configure name to ${BOOTSTRAP_HOSTNAME}"
     fi
 
-    if ${BOOTSTRAP_SKIP_HOSTS} ; then
+    if $BOOTSTRAP_SKIP_HOSTS ; then
         echo "Will not configure hosts"
     fi
 
-    if ${BOOTSTRAP_SKIP_ZSH} ; then
+    if $BOOTSTRAP_SKIP_ZSH ; then
         echo "Will not install ZSH"
     fi
 
-    if ${BOOTSTRAP_KUBE_NODE} ; then
+    if $BOOTSTRAP_KUBE_NODE ; then
         echo "Marked kubernetes packages for installation"
     fi
 
-    if ${BOOTSTRAP_REBOOT} ; then
+    if $BOOTSTRAP_REBOOT ; then
         echo "Will reboot when finished"
     fi
 fi
@@ -124,7 +124,7 @@ if [[ ! -z "${BOOTSTRAP_HOSTNAME}" ]]; then
 fi
 
 # Adding entries to the host file
-if ! ${BOOTSTRAP_SKIP_HOSTS} ; then
+if ! $BOOTSTRAP_SKIP_HOSTS ; then
     sudo $HOSTS_CONFIG_PATH/configureHosts.sh
 fi
 
@@ -138,7 +138,16 @@ sudo cp $SSH_CONFIG_PATH/sshd_config /etc/ssh/sshd_config
 sudo systemctl daemon-reload && sudo systemctl enable sshd && sudo systemctl restart sshd
 
 # Install some packages
-sudo apt-get install -y ca-certificates curl apt-transport-https ca-certificates curl gpg nfs-common
+sudo apt-get install -y \
+    ca-certificates \
+    curl \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gpg \
+    nfs-common \
+    net-tools \
+    iperf
 
 # Setup repository for docker
 sudo apt-get install ca-certificates curl
@@ -151,7 +160,7 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 # Setup repository for kube
-if [ ${BOOTSTRAP_KUBE_NODE} ]; then
+if $BOOTSTRAP_KUBE_NODE ; then
     echo "Setting up kube repository"
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
@@ -162,8 +171,11 @@ echo "Installing docker..."
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Install kubernetes  
-if [ ${BOOTSTRAP_KUBE_NODE} ]; then
+if $BOOTSTRAP_KUBE_NODE ; then
     # Necessary configuration for containerd to work
+    echo "Disabling swap"
+    sudo swapoff -a
+
     echo "Configuring containerd for kubernetes"
     sudo mkdir -p /etc/containerd/
     containerd config default | sudo tee /etc/containerd/config.toml
@@ -175,7 +187,7 @@ if [ ${BOOTSTRAP_KUBE_NODE} ]; then
     sudo systemctl enable --now kubelet
 fi
 
-if [ ! ${BOOTSTRAP_SKIP_ZSH} ]; then
+if ! $BOOTSTRAP_SKIP_ZSH ; then
     # Install and configure zsh and plugins
     echo "Installing and configuring zsh..." 
     sudo apt-get install zsh -y
@@ -183,9 +195,9 @@ if [ ! ${BOOTSTRAP_SKIP_ZSH} ]; then
     git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
     git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autocomplete
     git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+    git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting
     cp $ZSH_CONFIG_PATH/zshrc ~/.zshrc
-    cp $ZSH_CONFIG_PATH/themes/* ~/.oh-my-zsh/themes
-
+    cp $ZSH_CONFIG_PATH/themes/* ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes
 
     # Set the default shell to zsh
     sudo chsh -s "$(which zsh)" $USER
@@ -194,7 +206,7 @@ fi
 sudo apt-get update && sudo apt-get upgrade -y
 
 echo "Finished installing"
-if  ${BOOTSTRAP_REBOOT} ; then
+if  $BOOTSTRAP_REBOOT ; then
     echo "Rebooting in 5 seconds..."
     sleep 5
     sudo reboot
