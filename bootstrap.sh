@@ -3,9 +3,12 @@
 BOOTSTRAP_GH_USER=""
 BOOTSTRAP_KUBE_NODE=false
 BOOTSTRAP_REBOOT=false
+BOOTSTRAP_GPU=false
 BOOTSTRAP_SKIP_HOSTS=false
 BOOTSTRAP_SKIP_ZSH=false
 BOOTSTRAP_VERBOSE=false
+
+BOOTSTRAP_NVIDIA_DRIVER_VERSION=580
 
 IFS=" "
 KEEP_ZSHRC="yes"
@@ -67,8 +70,12 @@ while test $# -gt 0; do
             BOOTSTRAP_REBOOT=true
             shift
             ;;
-        -v--verbose)
+        -v|--verbose)
             BOOTSTRAP_VERBOSE=true
+            shift
+            ;;
+        --gpu)
+            BOOTSTRAP_GPU=true
             shift
             ;;
         --skip-hosts-configuration)
@@ -94,6 +101,10 @@ if $BOOTSTRAP_VERBOSE; then
 
     if [[ ! -z "${BOOTSTRAP_HOSTNAME}" ]]; then
         echo "Set to configure name to ${BOOTSTRAP_HOSTNAME}"
+    fi
+
+    if $BOOTSTRAP_GPU ; then
+        echo "Installing GPU driver version ${BOOTSTRAP_NVIDIA_DRIVER_VERSION}"
     fi
 
     if $BOOTSTRAP_SKIP_HOSTS ; then
@@ -160,6 +171,23 @@ echo \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+&& curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+if ${BOOTSTRAP_GPU} ; then
+    sudo ubuntu-drivers install --gpgpu nvidia:${BOOTSTRAP_NVIDIA_DRIVER_VERSION}-server
+    sudo apt install \
+        nvidia-utils-${BOOTSTRAP_NVIDIA_DRIVER_VERSION}-server \
+        libnvidia-encode-${BOOTSTRAP_NVIDIA_DRIVER_VERSION}-server \
+        libnvidia-decode-${BOOTSTRAP_NVIDIA_DRIVER_VERSION}-server \
+        nvidia-container-toolkit \
+        nvtop
+
+    sudo nvidia-ctk runtime configure --runtime=docker
+fi
+
 # Setup repository for kube
 if $BOOTSTRAP_KUBE_NODE ; then
     echo "Setting up kube repository"
@@ -186,6 +214,8 @@ if $BOOTSTRAP_KUBE_NODE ; then
     sudo apt-get install -y kubelet kubeadm kubectl
     sudo apt-mark hold kubelet kubeadm kubectl
     sudo systemctl enable --now kubelet
+
+    sudo chmod 777 /var/run/docker.sock
 fi
 
 if ! $BOOTSTRAP_SKIP_ZSH ; then
@@ -196,7 +226,6 @@ if ! $BOOTSTRAP_SKIP_ZSH ; then
     git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
     git clone --depth 1 -- https://github.com/marlonrichert/zsh-autocomplete.git  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autocomplete
     git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-    git clone https://github.com/zdharma-continuum/fast-syntax-highlighting.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/fast-syntax-highlighting
     cp $ZSH_CONFIG_PATH/zshrc ~/.zshrc
     cp $ZSH_CONFIG_PATH/themes/* ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes
 
